@@ -42,7 +42,7 @@ class BagController extends Controller
         $bag->save();
 
         return response()->json([
-            'message'=> 'creado correctamente',
+            'message'=> 'Bag creado correctamente',
             'bag'=>$bag
         ],201);
     }
@@ -83,7 +83,10 @@ class BagController extends Controller
         $bag->save();
 
         //$bags = Bag::update($request);
-        return "Bag ACTUALIZADO correctamente";
+        return response()->json([
+            'message'=> 'Bag actualizado correctamente',
+            'bag'=>$bag
+        ],201);
 
     }
 
@@ -96,7 +99,10 @@ class BagController extends Controller
     public function delete(Bag $bag)
     {
         $bag->delete();
-        return "Bag Borrado";
+        return response()->json([
+            'message'=> 'Bag eliminado correctamente',
+            'bag'=>$bag
+        ],201);
 
     }
 }
