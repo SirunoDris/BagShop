@@ -20,7 +20,7 @@ class BagController extends Controller
     }
 
     /**
-     * Create a new Bag.
+     * Crea un Bag con sus parametros
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -48,10 +48,8 @@ class BagController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Bag  $bag
-     * @return \Illuminate\Http\Response
+     * Display all the bags
+     * 
      */
     public function read($id)
     {
@@ -60,44 +58,40 @@ class BagController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Bag  $bag
-     * @return \Illuminate\Http\Response
+     * Actualiza el registro del Bag por id
      */
     public function update(Request $request, Bag $bag)
     {
-        //Esta mal ¡, lo que esta jacienddo es crea rmas bolso
         $request->validate([
+            'id'=> 'required',
             'name' => 'required',
             'price' => 'required|numeric',
-            'material' => 'required',
-            'user_id' => 'required',
+            'material',
         ]);
-
-        $bag->name = $request->name;
-        $bag->price = $request ->price;
-        $bag->material = $request ->material;
-        $bag->user_id = $request->user_id;
-        $bag->save();
-
-        //$bags = Bag::update($request);
+        $id =$request->get('id');
+        $registroBag = Bag::find($id);
+        if (!$registroBag) {
+            return "No existe un bag con este id";
+        }
+        $registroBag->name = $request->input('name');
+        $registroBag->price = $request->input('price');
+        $registroBag->material = $request->input('material');
+        $registroBag->save();
         return response()->json([
             'message'=> 'Bag actualizado correctamente',
-            'bag'=>$bag
+            'bag'=>$registroBag
         ],201);
-
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Bag  $bag
-     * @return \Illuminate\Http\Response
+     * Elimina el Bag por ID
      */
-    public function delete(Bag $bag)
+function delete(Bag $bag, $id)
     {
+        $bag = Bag::find($id);
+        if(!$bag){
+            return "No se ha encontrado ningun bag con este id";
+        }
         $bag->delete();
         return response()->json([
             'message'=> 'Bag eliminado correctamente',
