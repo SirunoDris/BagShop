@@ -9,62 +9,60 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Validation\Validator;
 
 
 class LoginController extends Controller
 {
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|confirmed'
-        ]);
+    /**
+     * Register and create token
+     */
+    public function register(Request $request){
 
-        $user = new User([
-            'name' => $request->name,
-            'email' => $request->email,
+        $request->validate([
+            'name'=>'required|string',
+            'email'=>'required|string|email|unique:users',
+            'password'=>'required|string'
+        ]);
+        if(!$request){
+            return response()->json($request->errors());
+        }
+        $user= User::create([
+            'name'=> $request->name,
+            'email'=> $request->email,
             'password' => Hash::make($request->password)
         ]);
-        
-        $user->save();
-        return response()->json([
-            'message' => 'Successfully created user'
-        ], 201);
+        //token user
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        
+        return response()->json([
+            'message'=> 'Usuario registrado correctamente',
+            'user'=> $user,
+            'token'=>$token
+        ],201);
     }
     /**
      * Login user and create token
      *
-     * @param  [string] email
-     * @param  [string] password
-     * @param  [boolean] remember_me
-     * @return [string] access_token
-     * @return [string] token_type
-     * @return [string] expires_at
      */
     public function login(Request $request)
     {
+        //Primero validamos
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
-
+        //recogemos las credenciales
         $credentials = request(['email', 'password']);
 
-        if(!Auth::attempt($credentials))
+        if(!Auth::attempt($credentials)){
             return response()->json([
                 'message' => 'Unauthorized'
             ], 401);
-
+        }
         $user = $request->user();
         $tokenResult = $user->createToken($request->name)->plainTextToken;
       
-        //dd($tokenResult);
-        //dd($tokenResult->plainTextToken);
-        //$token = PersonalAccessToken::findToken($tokenId);
-
         return response()->json([
             'token' => $tokenResult,
             'token_type' => 'Bearer',
@@ -79,10 +77,15 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->token()->revoke();
+        if ($request->user()) {
+            $request->user()->token()->revoke();
+        }
+    
         return response()->json([
-            'message' => 'Successfully logged out'
-        ]);
+            'message' => 'User Successfully logged out'
+        ], 201);
+         
+        
     }
 
     /**
